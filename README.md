@@ -1,44 +1,60 @@
 # Text Editor with Undo/Redo using Two Stacks
 
+A simple console-based **Java Text Editor** that demonstrates **Undo** and **Redo** functionality using the **Two Stacks** data structure. The project is designed as a **Low-Level Design (LLD)** implementation showcasing **Object-Oriented Programming (OOP)** concepts such as classes, objects, encapsulation, and object composition.
+
+---
+
 ## Overview
 
-This project is a simple console-based **Text Editor** developed in **Java** that demonstrates the implementation of the **Undo** and **Redo** operations using the **Two Stacks** data structure. It is designed as a Low-Level Design (LLD) project to showcase object-oriented programming principles and efficient state management.
+The application allows users to:
+
+- Type text
+- Undo the last change
+- Redo an undone change
+- Display the current text
+- Exit the application
+
+The editor uses two stacks to efficiently manage text states:
+
+- **Undo Stack** – Stores previous text states.
+- **Redo Stack** – Stores undone states for redo operations.
 
 ---
 
 ## Problem Statement
 
-Develop a text editor that allows users to type text and perform **Undo** and **Redo** operations efficiently using two stacks.
+Develop a console-based text editor that supports **Undo** and **Redo** operations efficiently using **Two Stacks** while following Object-Oriented Programming principles.
 
 ---
 
 ## Objectives
 
-* Implement a text editor using Java.
-* Demonstrate the use of the Stack data structure.
-* Implement Undo and Redo functionality.
-* Apply Object-Oriented Programming (OOP) concepts.
-* Create a simple and user-friendly console application.
+- Implement a text editor in Java.
+- Demonstrate the Stack data structure.
+- Implement Undo and Redo functionality.
+- Apply OOP concepts using classes and objects.
+- Build a simple menu-driven console application.
 
 ---
 
 ## Features
 
-* Add text to the editor.
-* Undo the last operation.
-* Redo the previously undone operation.
-* Display the current text.
-* Menu-driven console interface.
-* Custom Stack implementation.
+- Type text
+- Undo previous changes
+- Redo undone changes
+- Display current text
+- Menu-driven interface
+- Custom Stack implementation
+- Single Java source file using multiple classes
 
 ---
 
 ## Technologies Used
 
-* **Language:** Java
-* **IDE:** Visual Studio Code
-* **Version Control:** Git
-* **Repository Hosting:** GitHub
+- **Language:** Java
+- **IDE:** Visual Studio Code
+- **Version Control:** Git
+- **Repository:** GitHub
 
 ---
 
@@ -46,15 +62,15 @@ Develop a text editor that allows users to type text and perform **Undo** and **
 
 ### Two Stacks
 
-The application uses two stacks:
+The application maintains two stacks:
 
 ### Undo Stack
 
-Stores the previous states of the text before every modification.
+Stores previous text states before every modification.
 
 ### Redo Stack
 
-Stores the states removed during an Undo operation, allowing them to be restored using Redo.
+Stores states removed during an Undo operation, allowing them to be restored using Redo.
 
 ---
 
@@ -67,94 +83,101 @@ TextEditor-UndoRedo
 ├── .gitignore
 │
 ├── docs
-│   ├── README_Project.md
-│   ├── UseCaseDiagram.png
-│   ├── ClassDiagram.png
-│   ├── SequenceDiagram.png
-│   ├── ActivityDiagram.png
-│   └── LLD_Report.pdf
+│   ├── FlowDiagram.png
+│   └── README_Project.md
 │
 ├── output
 │   └── SampleOutput.txt
 │
 └── src
-    ├── Main.java
-    ├── Stack.java
-    ├── UndoRedoManager.java
-    └── TextEditor.java
+    └── Main.java
 ```
 
 ---
 
-## Class Description
+# Flow Diagram
 
-### Stack.java
+<p align="center">
+    <img src="docs/FlowDiagram.png" alt="Flow Diagram" width="900">
+</p>
 
-Implements a custom stack using `ArrayList<String>`.
+---
+
+## Classes Used
+
+Although the project uses a single source file (`Main.java`), it contains four classes:
+
+### Main
+
+- Displays the menu
+- Reads user input
+- Creates the `TextEditor` object
+- Controls program execution
+
+---
+
+### TextEditor
+
+Responsible for editor operations.
 
 **Methods**
 
-* push()
-* pop()
-* peek()
-* isEmpty()
-* size()
-* clear()
+- `typeText()`
+- `undo()`
+- `redo()`
+- `showText()`
 
 ---
 
-### UndoRedoManager.java
+### UndoRedoManager
 
-Manages the Undo and Redo stacks.
+Handles the Undo and Redo logic.
 
 **Responsibilities**
 
-* Save text states
-* Undo operations
-* Redo operations
+- Save previous states
+- Undo changes
+- Redo changes
 
 ---
 
-### TextEditor.java
+### Stack
 
-Handles the editor's business logic.
+Custom stack implementation using `ArrayList<String>`.
 
-**Functions**
+**Methods**
 
-* Type text
-* Undo
-* Redo
-* Display current text
-
----
-
-### Main.java
-
-Provides the console-based user interface and menu-driven interaction.
+- `push()`
+- `pop()`
+- `peek()`
+- `isEmpty()`
+- `clear()`
 
 ---
 
 ## Algorithm
 
 1. Start the application.
-2. Initialize the Undo Stack and Redo Stack.
-3. Display the menu.
-4. Read the user's choice.
-5. If the user types text:
-
-   * Save the current state to the Undo Stack.
-   * Append the new text.
-   * Clear the Redo Stack.
-6. If Undo is selected:
-
-   * Move the current state to the Redo Stack.
-   * Restore the previous state from the Undo Stack.
-7. If Redo is selected:
-
-   * Move the current state to the Undo Stack.
-   * Restore the latest state from the Redo Stack.
-8. Display the current text whenever requested.
-9. Exit when the user chooses Exit.
+2. Create the `TextEditor` object.
+3. Initialize:
+   - Current text
+   - Undo Stack
+   - Redo Stack
+4. Display the menu.
+5. Read the user's choice.
+6. If **Type Text**:
+   - Save current state into Undo Stack.
+   - Clear Redo Stack.
+   - Append new text.
+7. If **Undo**:
+   - Move current state to Redo Stack.
+   - Restore previous state from Undo Stack.
+8. If **Redo**:
+   - Move current state to Undo Stack.
+   - Restore state from Redo Stack.
+9. If **Show Current Text**:
+   - Display current text.
+10. Exit the application.
 
 ---
 
@@ -172,11 +195,9 @@ Provides the console-based user interface and menu-driven interaction.
 5. Exit
 
 Enter your choice: 1
-
 Enter text: hello
 
 Enter your choice: 1
-
 Enter text: world
 
 Enter your choice: 4
@@ -194,37 +215,42 @@ Enter your choice: 3
 Enter your choice: 4
 
 Current Text: helloworld
+
+Enter your choice: 5
+
+Thank you!
 ```
 
 ---
 
 ## OOP Concepts Used
 
-* Encapsulation
-* Abstraction
-* Modularity
-* Object Composition
+- Classes and Objects
+- Encapsulation
+- Abstraction
+- Object Composition
+- Modularity
 
 ---
 
 ## Future Enhancements
 
-* GUI using Java Swing or JavaFX
-* File Save/Open functionality
-* Copy, Cut, and Paste operations
-* Search and Replace
-* Keyboard shortcuts
-* Rich text editing
+- GUI using Java Swing or JavaFX
+- Save/Open text files
+- Copy, Cut and Paste
+- Search and Replace
+- Keyboard shortcuts
+- Rich text editor
 
 ---
 
 ## Learning Outcomes
 
-* Understanding of Stack data structures.
-* Practical implementation of Undo/Redo.
-* Experience with Java object-oriented programming.
-* Hands-on use of Git and GitHub for version control.
-* Exposure to Low-Level Design principles.
+- Understanding of Stack data structures.
+- Practical implementation of Undo/Redo.
+- Experience with Java Object-Oriented Programming.
+- Git and GitHub version control.
+- Low-Level Design (LLD) implementation using classes and objects.
 
 ---
 
