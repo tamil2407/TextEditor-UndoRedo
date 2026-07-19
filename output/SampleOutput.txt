@@ -1,0 +1,35 @@
+==============================
+TEXT EDITOR WITH UNDO/REDO
+==========================
+
+1. Type Text
+2. Undo
+3. Redo
+4. Show Current Text
+5. Exit
+
+Enter your choice: 1
+Enter text: hello
+
+Enter your choice: 1
+Enter text: world
+
+Enter your choice: 4
+
+Current Text: helloworld
+
+Enter your choice: 2
+
+Enter your choice: 4
+
+Current Text: hello
+
+Enter your choice: 3
+
+Enter your choice: 4
+
+Current Text: helloworld
+
+Enter your choice: 5
+
+Thank you!
