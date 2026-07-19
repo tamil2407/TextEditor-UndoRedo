@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -55,5 +56,96 @@ public class Main {
         } while (choice != 5);
 
         scanner.close();
+    }
+}
+
+class Stack {
+
+    private ArrayList<String> stack = new ArrayList<>();
+
+    public void push(String value) {
+        stack.add(value);
+    }
+
+    public String pop() {
+        if (isEmpty()) {
+            return null;
+        }
+        return stack.remove(stack.size() - 1);
+    }
+
+    public String peek() {
+        if (isEmpty()) {
+            return null;
+        }
+        return stack.get(stack.size() - 1);
+    }
+
+    public boolean isEmpty() {
+        return stack.isEmpty();
+    }
+
+    public int size() {
+        return stack.size();
+    }
+
+    public void clear() {
+        stack.clear();
+    }
+}
+
+class UndoRedoManager {
+
+    private Stack undoStack = new Stack();
+    private Stack redoStack = new Stack();
+
+    public void saveState(String currentText) {
+        undoStack.push(currentText);
+        redoStack.clear();
+    }
+
+    public String undo(String currentText) {
+
+        if (undoStack.isEmpty()) {
+            System.out.println("Nothing to undo.");
+            return currentText;
+        }
+
+        redoStack.push(currentText);
+        return undoStack.pop();
+    }
+
+    public String redo(String currentText) {
+
+        if (redoStack.isEmpty()) {
+            System.out.println("Nothing to redo.");
+            return currentText;
+        }
+
+        undoStack.push(currentText);
+        return redoStack.pop();
+    }
+}
+
+class TextEditor {
+
+    private String currentText = "";
+    private UndoRedoManager manager = new UndoRedoManager();
+
+    public void typeText(String text) {
+        manager.saveState(currentText);
+        currentText += text;
+    }
+
+    public void undo() {
+        currentText = manager.undo(currentText);
+    }
+
+    public void redo() {
+        currentText = manager.redo(currentText);
+    }
+
+    public void showText() {
+        System.out.println("\nCurrent Text: " + currentText);
     }
 }
