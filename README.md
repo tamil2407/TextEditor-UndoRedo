@@ -256,9 +256,9 @@ Thank you!
 
 ## Author
 
-**Tamilvel Mugunthan**
+**Tamilvel Mugunthan S**
 
-Electrical and Electronics Engineering (EEE)
+Electrical and Electronics Engineering
 
 ---
 
