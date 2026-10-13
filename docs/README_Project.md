@@ -1,80 +1,43 @@
-# Project Documentation: Text Editor with Undo/Redo
+# Project Documentation
 
 ## Overview
+A Java Swing text editor that demonstrates a two-stack undo/redo design with a simple desktop interface.
 
-This project is a Java Swing desktop text editor. It demonstrates object-oriented design and a custom two-stack history mechanism for undo and redo. The editor keeps the active document in memory, lets the user work with files through standard dialogs, and displays live document statistics.
+## Problem Statement
+Text editors need to reverse recent edits and restore edits that were undone. Two stacks can maintain prior and redoable document snapshots.
 
-## Application workflow
+## Objectives
+- Create a desktop editor using Java Swing.
+- Implement undo and redo using LIFO stacks.
+- Separate model, view, controller, and utilities.
+- Support UTF-8 plain-text file operations.
+- Display live word, character, and line counts.
 
-```text
-Main
-  └─ starts the Swing UI thread
-       └─ EditorUI
-            ├─ accepts document edits
-            ├─ delegates text state to TextEditor
-            │    └─ delegates history to UndoRedoManager
-            │         ├─ undo Stack
-            │         └─ redo Stack
-            └─ uses FileManager for UTF-8 file I/O
-```
+## Methodology
+1. The user edits text in the Swing text area.
+2. The controller forwards changes to the model.
+3. Before a change, the previous document snapshot is pushed onto the undo stack.
+4. Undo pushes the current state onto the redo stack and restores the previous state.
+5. Redo pushes the current state onto the undo stack and restores the next state.
+6. FileManager reads and writes UTF-8 text files.
 
-## Source layout
+## Components
+- `Main`: application entry point.
+- `model.Stack`: LIFO collection for snapshots.
+- `model.UndoRedoManager`: undo/redo history logic.
+- `model.TextEditor`: current document state.
+- `view.EditorUI`: Swing UI, menus, toolbar, status bar.
+- `controller.EditorController`: coordinates UI, model, and files.
+- `util.FileManager`: text-file reading and writing.
+- `util.ThemeManager`: light and dark color palettes.
 
-| Path | Responsibility |
-| --- | --- |
-| `src/Main.java` | Launches the application window on Swing’s event-dispatch thread. |
-| `src/view/EditorUI.java` | Implements the window, menus, toolbar, text area, status bar, dialogs, and UI actions. |
-| `src/model/TextEditor.java` | Maintains the current text and coordinates history operations. |
-| `src/model/UndoRedoManager.java` | Stores and restores prior states using undo and redo stacks. |
-| `src/model/Stack.java` | Provides `push`, `pop`, `peek`, `isEmpty`, and `clear` for `String` states. |
-| `src/util/FileManager.java` | Opens and saves UTF-8 text using `java.nio.file.Files`. |
+## Algorithms
+**Undo:** if undo history exists, push current text to redo, then restore the top undo snapshot.  
+**Redo:** if redo history exists, push current text to undo, then restore the top redo snapshot.  
+A new edit clears redo history.
 
-The `src/controller`, `test`, and `assets` directories are currently reserved for future controller classes, automated tests, and visual assets respectively.
+## Technologies
+Java JDK 11+, Java Swing, VS Code, Git, GitHub, PowerShell.
 
-## User interface
-
-The application window includes:
-
-- A File menu: New, Open, Save, Save As, and Exit
-- An Edit menu: Undo and Redo
-- A Help menu: About
-- A toolbar for New, Open, Save, Save As, Undo, and Redo
-- A word-wrapping text area
-- A status bar with word, character, and line counts
-
-Keyboard shortcuts are Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Z, and Ctrl+Y. File operations report I/O failures in an error dialog. Starting a new document, opening another file, or closing the window requests confirmation before non-empty text is discarded.
-
-## Undo/redo algorithm
-
-1. A user edit triggers the text-area document listener.
-2. `TextEditor.replaceText` saves the old text through `UndoRedoManager` and records the new text.
-3. Saving a new state pushes the old value to the undo stack and clears the redo stack.
-4. Undo pushes the current text to the redo stack, then restores the most recent undo state.
-5. Redo pushes the current text to the undo stack, then restores the most recent redo state.
-6. If the relevant stack is empty, the document remains unchanged.
-
-## Build and launch
-
-Run these commands from the repository root with JDK 11 or later:
-
-```powershell
-javac -d out src/Main.java src/model/*.java src/util/*.java src/view/*.java
-java -cp out Main
-```
-
-Compiled files are produced in `out/`; they are ignored by Git.
-
-## Current limitations
-
-- History is kept only in memory and is reset when the application closes.
-- Undo/redo snapshots cover complete text-area changes rather than character-level operations.
-- The editor does not track a separate “unsaved changes” state; confirmation is based on whether the text area is non-empty.
-- There are no automated tests yet.
-
-## Future enhancements
-
-- Add document-dirty tracking and save-before-close prompts
-- Add Cut, Copy, Paste, Find, and Replace
-- Add configurable themes and font settings
-- Add automated tests for the model and file utility
-- Add icons and screenshots under `assets/`
+## Limitations and future work
+Undo history is in-memory and plain-text formats are currently supported. Future work may include Find/Replace, autosave, PDF/DOCX export, and GUI automation tests.

@@ -1,90 +1,62 @@
 # Text Editor with Undo/Redo
 
-A desktop text editor written in Java Swing. It uses a custom two-stack undo/redo implementation and supports creating, opening, editing, and saving UTF-8 text files.
+A Java Swing desktop text editor demonstrating low-level design and undo/redo using two stacks.
 
 ## Features
-
-- Create a new document
-- Open and save text files
-- Save documents under a new name
-- Undo and redo complete text changes
-- Edit through a word-wrapping text area
-- View live word, character, and line counts
-- Use toolbar actions, menus, or keyboard shortcuts
+- Swing desktop interface, toolbar, and File/Edit/View/Help menus
+- Undo/Redo using two stacks of text snapshots
+- New, Open, Save, and Save As for UTF-8 plain-text files
+- Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, Ctrl+Z, Ctrl+Y
+- Live word, character, and line counts
+- Light/dark theme toggle
+- Unsaved-change prompt
 
 ## Requirements
+JDK 11 or newer. No third-party libraries required.
 
-- Java Development Kit (JDK) 11 or later
-
-## Run
-
-From the project root:
-
+## Compile and run (PowerShell, repository root)
 ```powershell
-javac -d out src/Main.java src/model/*.java src/util/*.java src/view/*.java
+Remove-Item out -Recurse -Force -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force out
+javac -d out src\Main.java src\model\Stack.java src\model\UndoRedoManager.java src\model\TextEditor.java src\util\FileManager.java src\util\ThemeManager.java src\controller\EditorController.java src\view\EditorUI.java
 java -cp out Main
 ```
 
-The application opens in a Swing window.
+## Test the model
+```powershell
+javac -cp out -d out test\TextEditorTest.java
+java -cp out TextEditorTest
+```
+Expected: `All TextEditor tests passed.`
 
-## Controls
-
-| Action | Menu / toolbar | Shortcut |
-| --- | --- | --- |
-| New document | File > New | Ctrl+N |
-| Open file | File > Open | Ctrl+O |
-| Save file | File > Save | Ctrl+S |
-| Save under a new name | File > Save As | — |
-| Undo | Edit > Undo | Ctrl+Z |
-| Redo | Edit > Redo | Ctrl+Y |
-| Exit | File > Exit | — |
-
-New, Open, and Exit ask for confirmation before discarding non-empty text.
-
-## Project structure
-
+## Structure
 ```text
 TextEditor-UndoRedo/
-├── assets/                    # Reserved for icons and screenshots
-├── docs/
-│   ├── FlowDiagram.png
-│   └── README_Project.md      # Detailed project documentation
-├── output/
-│   └── SampleOutput.txt       # Example application interaction
-├── src/
-│   ├── Main.java              # Application entry point
-│   ├── controller/            # Reserved for controller classes
-│   ├── model/
-│   │   ├── Stack.java
-│   │   ├── TextEditor.java
-│   │   └── UndoRedoManager.java
-│   ├── util/
-│   │   └── FileManager.java
-│   └── view/
-│       └── EditorUI.java
-└── test/                      # Reserved for automated tests
+├── README.md
+├── .gitignore
+├── docs/FlowDiagram.png
+├── docs/README_Project.md
+├── output/SampleOutput.txt
+├── assets/screenshots/
+├── assets/icons/
+├── src/Main.java
+├── src/model/{Stack,UndoRedoManager,TextEditor}.java
+├── src/view/EditorUI.java
+├── src/controller/EditorController.java
+├── src/util/{FileManager,ThemeManager}.java
+└── test/TextEditorTest.java
 ```
 
-`out/` contains compiled `.class` files and is intentionally excluded from version control.
-
 ## Architecture
+- **Model:** document state and history.
+- **View:** Swing window and controls.
+- **Controller:** coordinates view, model, and file actions.
+- **Utilities:** UTF-8 file operations and theme palettes.
 
-- `Main` starts the Swing event-dispatch thread and shows `EditorUI`.
-- `EditorUI` owns the window, menus, toolbar, document listener, file chooser, and status bar.
-- `TextEditor` holds the current document text and delegates history operations.
-- `UndoRedoManager` stores document states in separate undo and redo stacks.
-- `Stack` is the project’s `ArrayList<String>`-backed stack implementation.
-- `FileManager` reads and writes UTF-8 files.
+See `docs/README_Project.md` and `docs/FlowDiagram.png`.
 
-## Undo and redo behavior
+## Author
+Tamilvel Mugunthan S — Electrical and Electronics Engineering (EEE)  
+Roll Number: _Add your roll number_
 
-Each edit saves the previous document state on the undo stack and clears redo history. Undo moves the current state to the redo stack and restores the latest undo state. Redo performs the reverse operation.
-
-## Documentation and sample
-
-- [Detailed project documentation](docs/README_Project.md)
-- [Example interaction](output/SampleOutput.txt)
-
-## License
-
-Educational project.
+Educational project. Add a license file if you plan to publish under a specific open-source license.

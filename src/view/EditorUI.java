@@ -1,9 +1,7 @@
-
 package view;
 
-import model.TextEditor;
-import util.FileManager;
-
+import controller.EditorController;
+import util.ThemeManager;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -12,262 +10,150 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class EditorUI {
+    private final EditorController controller;
+    private final JFrame frame = new JFrame("Text Editor - Untitled");
+    private final JTextArea area = new JTextArea();
+    private final JLabel status = new JLabel("Ready");
+    private boolean syncing;
+    private boolean dark;
 
-    private final JFrame frame = new JFrame("Text Editor - Undo/Redo");
-    private final JTextArea textArea = new JTextArea();
-    private final JLabel statusBar = new JLabel("Ready");
-
-    private final TextEditor editor = new TextEditor();
-    private final FileManager fileManager = new FileManager();
-
-    private Path currentFile;
-    private boolean syncing = false;
+    public EditorUI(EditorController controller) { this.controller = controller; }
 
     public void showWindow() {
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setSize(900, 650);
-        frame.setMinimumSize(new Dimension(600, 400));
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        frame.setSize(1000, 700);
+        frame.setMinimumSize(new Dimension(650, 450));
         frame.setLocationRelativeTo(null);
+        area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 16));
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setMargin(new Insets(14,14,14,14));
+        frame.setJMenuBar(menuBar());
+        frame.add(toolbar(), BorderLayout.NORTH);
+        frame.add(new JScrollPane(area), BorderLayout.CENTER);
+        status.setBorder(BorderFactory.createEmptyBorder(6,10,6,10));
+        frame.add(status, BorderLayout.SOUTH);
 
-        textArea.setFont(new Font("Consolas", Font.PLAIN, 16));
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setMargin(new Insets(12, 12, 12, 12));
-
-        frame.setJMenuBar(createMenuBar());
-        frame.add(createToolbar(), BorderLayout.NORTH);
-        frame.add(new JScrollPane(textArea), BorderLayout.CENTER);
-        frame.add(statusBar, BorderLayout.SOUTH);
-
-        textArea.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateEditor();
+        area.getDocument().addDocumentListener(new DocumentListener() {
+            private void changed() {
+                if (!syncing) controller.textChanged(area.getText());
+                updateStatus(area.getText());
             }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateEditor();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateEditor();
-            }
+            public void insertUpdate(DocumentEvent e) { changed(); }
+            public void removeUpdate(DocumentEvent e) { changed(); }
+            public void changedUpdate(DocumentEvent e) { changed(); }
         });
-
         frame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent e) {
-                exitEditor();
-            }
+            @Override public void windowClosing(java.awt.event.WindowEvent e) { exit(); }
         });
-
-        updateStatus();
+        applyTheme();
+        updateStatus("");
         frame.setVisible(true);
     }
 
-    private JPanel createToolbar() {
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        addButton(toolbar, "New", this::newFile);
-        addButton(toolbar, "Open", this::openFile);
-        addButton(toolbar, "Save", this::saveFile);
-        addButton(toolbar, "Save As", this::saveFileAs);
-        addButton(toolbar, "Undo", this::undo);
-        addButton(toolbar, "Redo", this::redo);
-
-        return toolbar;
+    private JPanel toolbar() {
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 6));
+        addButton(p, "New", this::newFile); addButton(p, "Open", this::openFile);
+        addButton(p, "Save", this::saveFile); addButton(p, "Save As", this::saveAs);
+        addButton(p, "Undo", controller::undo); addButton(p, "Redo", controller::redo);
+        addButton(p, "Toggle Theme", this::toggleTheme);
+        return p;
     }
-
-    private void addButton(JPanel panel, String label, Runnable action) {
-        JButton button = new JButton(label);
-        button.addActionListener(e -> action.run());
-        panel.add(button);
+    private void addButton(JPanel p, String title, Runnable action) {
+        JButton b = new JButton(title); b.addActionListener(e -> action.run()); p.add(b);
     }
-
-    private JMenuBar createMenuBar() {
+    private JMenuBar menuBar() {
         JMenuBar bar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("File");
-        addMenuItem(fileMenu, "New", this::newFile, "control N");
-        addMenuItem(fileMenu, "Open", this::openFile, "control O");
-        addMenuItem(fileMenu, "Save", this::saveFile, "control S");
-        addMenuItem(fileMenu, "Save As", this::saveFileAs, null);
-        addMenuItem(fileMenu, "Exit", this::exitEditor, null);
-
-        JMenu editMenu = new JMenu("Edit");
-        addMenuItem(editMenu, "Undo", this::undo, "control Z");
-        addMenuItem(editMenu, "Redo", this::redo, "control Y");
-
-        JMenu helpMenu = new JMenu("Help");
-        JMenuItem about = new JMenuItem("About");
-        about.addActionListener(e -> JOptionPane.showMessageDialog(
-                frame,
-                "Text Editor with Undo/Redo\nJava Swing application using two stacks.",
-                "About",
-                JOptionPane.INFORMATION_MESSAGE
-        ));
-        helpMenu.add(about);
-
-        bar.add(fileMenu);
-        bar.add(editMenu);
-        bar.add(helpMenu);
-
+        JMenu file = new JMenu("File");
+        addItem(file,"New",this::newFile,"control N");
+        addItem(file,"Open...",this::openFile,"control O");
+        addItem(file,"Save",this::saveFile,"control S");
+        addItem(file,"Save As...",this::saveAs,"control shift S");
+        file.addSeparator(); addItem(file,"Exit",this::exit,null);
+        JMenu edit = new JMenu("Edit");
+        addItem(edit,"Undo",controller::undo,"control Z");
+        addItem(edit,"Redo",controller::redo,"control Y");
+        JMenu view = new JMenu("View");
+        addItem(view,"Toggle Light/Dark Theme",this::toggleTheme,null);
+        JMenu help = new JMenu("Help");
+        addItem(help,"About",() -> JOptionPane.showMessageDialog(frame,
+            "Text Editor with Undo/Redo\nJava Swing • Two-stack history",
+            "About",JOptionPane.INFORMATION_MESSAGE),null);
+        bar.add(file); bar.add(edit); bar.add(view); bar.add(help);
         return bar;
     }
-
-    private void addMenuItem(
-            JMenu menu, String label, Runnable action, String shortcut) {
-
-        JMenuItem item = new JMenuItem(label);
-
-        if (shortcut != null) {
-            item.setAccelerator(KeyStroke.getKeyStroke(shortcut));
-        }
-
-        item.addActionListener(e -> action.run());
-        menu.add(item);
-    }
-
-    private void updateEditor() {
-        if (syncing) {
-            return;
-        }
-
-        editor.replaceText(textArea.getText());
-        updateStatus();
-    }
-
-    private void syncTextArea() {
-        syncing = true;
-        textArea.setText(editor.getCurrentText());
-        syncing = false;
-        updateStatus();
-    }
-
-    private void undo() {
-        editor.undo();
-        syncTextArea();
-    }
-
-    private void redo() {
-        editor.redo();
-        syncTextArea();
+    private void addItem(JMenu menu, String title, Runnable action, String shortcut) {
+        JMenuItem item = new JMenuItem(title);
+        if (shortcut != null) item.setAccelerator(KeyStroke.getKeyStroke(shortcut));
+        item.addActionListener(e -> action.run()); menu.add(item);
     }
 
     private void newFile() {
-        if (!confirmDiscard()) {
-            return;
-        }
-
-        currentFile = null;
-        syncing = true;
-        textArea.setText("");
-        syncing = false;
-
-        editor.replaceText("");
-        frame.setTitle("Text Editor - New File");
-        updateStatus();
+        if (!confirmDiscard()) return;
+        controller.newDocument();
     }
-
     private void openFile() {
-        if (!confirmDiscard()) {
-            return;
-        }
-
+        if (!confirmDiscard()) return;
         JFileChooser chooser = new JFileChooser();
-
-        if (chooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
-        Path selectedFile = chooser.getSelectedFile().toPath();
-
-        try {
-            String content = fileManager.openFile(selectedFile);
-
-            currentFile = selectedFile;
-            editor.replaceText(content);
-
-            syncing = true;
-            textArea.setText(content);
-            syncing = false;
-
-            frame.setTitle("Text Editor - " + currentFile.getFileName());
-            updateStatus();
-
-        } catch (IOException ex) {
-            showError("Could not open file", ex);
-        }
+        if (chooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION) return;
+        try { controller.open(chooser.getSelectedFile().toPath()); }
+        catch (IOException ex) { error("Unable to open file", ex); }
     }
-
     private void saveFile() {
-        if (currentFile == null) {
-            saveFileAs();
-            return;
-        }
-
-        try {
-            fileManager.saveFile(currentFile, textArea.getText());
-            frame.setTitle("Text Editor - " + currentFile.getFileName());
-            statusBar.setText("File saved successfully.");
-        } catch (IOException ex) {
-            showError("Could not save file", ex);
-        }
+        if (controller.getCurrentFile() == null) { saveAs(); return; }
+        try { controller.save(); status.setText("Saved successfully."); }
+        catch (IOException | IllegalStateException ex) { error("Unable to save file", ex); }
     }
-
-    private void saveFileAs() {
+    private void saveAs() {
         JFileChooser chooser = new JFileChooser();
-
-        if (chooser.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
-        currentFile = chooser.getSelectedFile().toPath();
-        saveFile();
+        if (chooser.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION) return;
+        Path path = chooser.getSelectedFile().toPath();
+        try { controller.saveAs(path); status.setText("Saved successfully."); }
+        catch (IOException ex) { error("Unable to save file", ex); }
     }
-
     private boolean confirmDiscard() {
-        if (textArea.getText().isEmpty()) {
-            return true;
+        if (!controller.isDirty()) return true;
+        int choice = JOptionPane.showConfirmDialog(frame,
+            "Save changes before continuing?", "Unsaved Changes",
+            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (choice == JOptionPane.CANCEL_OPTION || choice == JOptionPane.CLOSED_OPTION) return false;
+        if (choice == JOptionPane.YES_OPTION) {
+            saveFile();
+            return !controller.isDirty();
         }
-
-        int result = JOptionPane.showConfirmDialog(
-                frame,
-                "Continue without saving your current text?",
-                "Confirm",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        return result == JOptionPane.YES_OPTION;
+        return choice == JOptionPane.NO_OPTION;
     }
+    private void exit() { if (confirmDiscard()) frame.dispose(); }
 
-    private void exitEditor() {
-        if (confirmDiscard()) {
-            frame.dispose();
-        }
+    public void refreshFromController() {
+        syncing = true;
+        area.setText(controller.getModel().getText());
+        syncing = false;
+        updateStatus(area.getText());
     }
-
-    private void updateStatus() {
-        String text = textArea.getText();
-
-        int characters = text.length();
-        int words = text.trim().isEmpty()
-                ? 0 : text.trim().split("\\s+").length;
-        int lines = text.isEmpty()
-                ? 1 : text.split("\\n", -1).length;
-
-        statusBar.setText(
-                "Words: " + words
-                + "    Characters: " + characters
-                + "    Lines: " + lines
-        );
+    public void updateWindowTitle(Path path, boolean dirty) {
+        String name = path == null ? "Untitled" : path.getFileName().toString();
+        frame.setTitle("Text Editor - " + name + (dirty ? " *" : ""));
     }
-
-    private void showError(String message, Exception ex) {
-        JOptionPane.showMessageDialog(
-                frame,
-                message + ":\n" + ex.getMessage(),
-                "File Error",
-                JOptionPane.ERROR_MESSAGE
-        );
+    public void updateStatus(String text) {
+        int words = text.trim().isEmpty() ? 0 : text.trim().split("\\s+").length;
+        int lines = text.isEmpty() ? 1 : text.split("\\R", -1).length;
+        status.setText("Words: " + words + "    Characters: " + text.length() + "    Lines: " + lines);
+    }
+    private void toggleTheme() { dark = !dark; applyTheme(); }
+    private void applyTheme() {
+        ThemeManager.Palette p = dark ? ThemeManager.dark() : ThemeManager.light();
+        frame.getContentPane().setBackground(p.background);
+        area.setBackground(p.editorBackground); area.setForeground(p.editorForeground);
+        area.setCaretColor(p.caret);
+        status.setOpaque(true); status.setBackground(p.statusBackground); status.setForeground(p.foreground);
+        SwingUtilities.updateComponentTreeUI(frame);
+        area.setBackground(p.editorBackground); area.setForeground(p.editorForeground);
+        area.setCaretColor(p.caret);
+        status.setBackground(p.statusBackground); status.setForeground(p.foreground);
+    }
+    private void error(String message, Exception ex) {
+        JOptionPane.showMessageDialog(frame, message + ":\n" + ex.getMessage(),
+            "File Error", JOptionPane.ERROR_MESSAGE);
     }
 }

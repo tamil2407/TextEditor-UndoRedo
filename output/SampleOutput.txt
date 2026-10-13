@@ -1,0 +1,14 @@
+TEXT EDITOR WITH UNDO/REDO — SAMPLE TEST
+
+Type: Hello
+Type:  World
+Undo -> Hello
+Redo -> Hello World
+Save As -> sample.txt
+Open sample.txt -> Hello World
+
+Status bar example:
+Words: 2    Characters: 11    Lines: 1
+
+Expected model test result:
+All TextEditor tests passed.
