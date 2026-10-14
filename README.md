@@ -170,6 +170,31 @@ Through this project, the implementation demonstrates:
 - File handling and user interaction
 - Basic testing and version control using Git
 
+## 📥 Download the Application
+
+**Version:** v1.0.0  
+**Platform:** Windows / Java-compatible systems  
+**Format:** Executable JAR
+
+Download the latest release from the project's GitHub Releases page:
+
+👉 [Download Text Editor](https://github.com/tamil2407/TextEditor-UndoRedo/releases)
+
+### How to Run
+
+1. Download `TextEditor-UndoRedo-v1.0.0.jar` from the release assets.
+2. Ensure a compatible Java runtime is installed.
+3. Double-click the downloaded JAR file to launch the application.
+
+### Release Features
+
+- Java Swing graphical interface
+- Undo and Redo using two stacks
+- Open and save text files
+- Keyboard shortcuts
+- Light and dark themes
+
+
 ## 👨‍💻 Project Information
 
 **Project Title:** Text Editor with Undo/Redo Using Two Stacks  
