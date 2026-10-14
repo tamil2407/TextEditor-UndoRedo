@@ -176,10 +176,4 @@ Through this project, the implementation demonstrates:
 **Category:** Java Application Development  
 **Focus Areas:** Data Structures, Low-Level Design, GUI Development
 
-## 📄 License
 
-This project is intended for educational and learning purposes. Add a repository license if you wish to define explicit terms for reuse and distribution.
-
----
-
-⭐ If you find this project useful for learning data structures or Java application development, consider starring the repository.
